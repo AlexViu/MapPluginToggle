@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>MapPluginToggle</AssemblyName>
+    <RootNamespace>MapPluginToggle</RootNamespace>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Same version the server runs (1.0.378); never copied to output, the host provides it. -->
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.378">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <!-- Shared lib installed on the server (addons/counterstrikesharp/shared/CS2MenuManager); never copied. -->
+    <PackageReference Include="CS2MenuManager" Version="1.0.43">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
