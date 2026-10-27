@@ -91,3 +91,7 @@ dotnet build -c Release
 
 Salida: `bin/Release/net10.0/MapPluginToggle.dll`. `CounterStrikeSharp.API` y `CS2MenuManager` se referencian
 como paquetes NuGet solo para compilar; no se copian a la salida porque el servidor ya los proporciona.
+
+## Licencia
+
+[MIT](LICENSE)
