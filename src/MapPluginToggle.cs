@@ -34,7 +34,7 @@ public class MapPluginToggle : BasePlugin, IPluginConfig<MapPluginToggleConfig>
 {
     public override string ModuleName => "MapPluginToggle";
     public override string ModuleVersion => "1.0.0";
-    public override string ModuleAuthor => "RandomPicks";
+    public override string ModuleAuthor => "Lonza";
     public override string ModuleDescription => "Disable other plugins per map (css_mapplugins)";
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
