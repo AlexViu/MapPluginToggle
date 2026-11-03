@@ -40,9 +40,16 @@ deseado no coincide con lo real, p. ej. un plugin que falló al cargar).
 ```json
 {
   "Permission": "@css/root",
-  "ChatPrefix": " \u0004[MapPlugins]\u0001"
+  "ChatPrefix": " \u0004[MapPlugins]\u0001",
+  "DefaultModelMaps": [ "*multigames*" ]
 }
 ```
+
+`DefaultModelMaps` (mapas o patrones con `*`): en esos mapas se desactivan las skins de jugador de
+[cs2-store](https://github.com/schwarper/cs2-store) y todos llevan el modelo por defecto. El resto de la
+tienda (créditos, estelas, alas...) sigue funcionando. Es el mismo ajuste que `css_model0`, pero se aplica
+solo al empezar cada mapa y cada ronda (cs2-store lo reinicia en cada ronda) y sin avisar por el chat.
+Con `[]` no se toca nada.
 
 `configs/plugins/MapPluginToggle/maps.json`:
 

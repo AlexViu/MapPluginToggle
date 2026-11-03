@@ -19,6 +19,12 @@ public class MapPluginToggleConfig : BasePluginConfig
 {
     [JsonPropertyName("Permission")] public string Permission { get; set; } = "@css/root";
     [JsonPropertyName("ChatPrefix")] public string ChatPrefix { get; set; } = " \x04[MapPlugins]\x01";
+
+    /// <summary>
+    /// Maps (name or pattern with '*') where the cs2-store player skins are turned off and everyone
+    /// uses the default models. The rest of the store (credits, trails, wings...) keeps working.
+    /// </summary>
+    [JsonPropertyName("DefaultModelMaps")] public List<string> DefaultModelMaps { get; set; } = ["*multigames*"];
 }
 
 /// <summary>
@@ -33,7 +39,7 @@ public class MapRules
 public class MapPluginToggle : BasePlugin, IPluginConfig<MapPluginToggleConfig>
 {
     public override string ModuleName => "MapPluginToggle";
-    public override string ModuleVersion => "1.0.0";
+    public override string ModuleVersion => "1.1.0";
     public override string ModuleAuthor => "Lonza";
     public override string ModuleDescription => "Disable other plugins per map (css_mapplugins)";
 
@@ -208,6 +214,52 @@ public class MapPluginToggle : BasePlugin, IPluginConfig<MapPluginToggleConfig>
         var mentioned = new HashSet<string>(_rules.Maps.Values.SelectMany(v => v), StringComparer.OrdinalIgnoreCase);
         foreach (var p in GetManagedPlugins().Where(p => mentioned.Contains(p.Folder)))
             SetLoaded(p, FindDisablingRule(p.Folder, map) == null);
+
+        ApplyStoreSkins(log: true);
+    }
+
+    // ---------------------------------------------------------------- store skins per map
+
+    // cs2-store resets Item_PlayerSkin.ForceModelDefault to false in its own round_start (Pre)
+    // handler, so on the listed maps it has to be set again after every round start.
+    [GameEventHandler(HookMode.Post)]
+    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        ApplyStoreSkins(log: false);
+        return HookResult.Continue;
+    }
+
+    private bool IsDefaultModelMap(string map) =>
+        Config.DefaultModelMaps.Any(p => p.Contains('*') ? WildcardMatch(p, map) : p.Equals(map, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Sets cs2-store's ForceModelDefault (the flag behind its css_model0/css_model1 commands)
+    /// directly, so it does not print a chat message every round. Players get the matching model
+    /// on their next spawn.
+    /// </summary>
+    private void ApplyStoreSkins(bool log)
+    {
+        var map = Server.MapName;
+        var forceDefault = IsDefaultModelMap(map);
+        try
+        {
+            var store = _pluginManager?.GetLoadedPlugins().FirstOrDefault(c =>
+                c.State == PluginState.Loaded &&
+                Path.GetFileNameWithoutExtension(c.FilePath).Equals("cs2-store", StringComparison.OrdinalIgnoreCase));
+            var prop = store?.Plugin?.GetType().Assembly.GetType("Store.Item_PlayerSkin")
+                ?.GetProperty("ForceModelDefault", BindingFlags.Public | BindingFlags.Static);
+            if (prop == null)
+            {
+                if (log) Logger.LogWarning("cs2-store or its ForceModelDefault flag not found; store skins left as they are");
+                return;
+            }
+            prop.SetValue(null, forceDefault);
+            if (log) Logger.LogInformation("Store skins {State} on {Map}", forceDefault ? "OFF (default models)" : "ON", map);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Could not set cs2-store skins on {Map}", map);
+        }
     }
 
     private void SetLoaded(PluginEntry p, bool shouldBeLoaded)
